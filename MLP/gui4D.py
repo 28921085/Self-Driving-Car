@@ -120,7 +120,7 @@ class GUI(tk.Tk):
             if self.collision_label["text"] != "是否碰撞: 否":
                 break
             # 休眠一秒
-            time.sleep(0.5)
+            time.sleep(0.2)
 
     def create_sensor(self):
         # 新增標籤來顯示 distances

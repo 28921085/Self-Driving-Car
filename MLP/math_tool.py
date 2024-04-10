@@ -70,3 +70,35 @@ class MathTool:
         else:
             # 若投影在線段範圍外，則判斷線段的兩個端點是否在圓內
             return np.linalg.norm(vector_center - vector_a) < radius or np.linalg.norm(vector_center - vector_b) < radius
+        
+    @staticmethod
+    def ray_segment_intersection(ray_start, ray_end, segment_start, segment_end):
+        """
+        計算射線與線段的交點
+        """
+        # 計算射線的方向向量
+        ray_direction = ray_end - ray_start
+
+        # 計算線段的方向向量
+        segment_direction = segment_end - segment_start
+
+        # 使用叉積計算射線和線段的交點
+        cross_product = np.cross(ray_direction, segment_direction)
+        
+        # 如果叉積為 0，表示兩線平行或重疊
+        if np.abs(cross_product) < 1e-8:
+            return None
+
+        # 計算射線起點到線段起點的向量
+        start_to_start = segment_start - ray_start
+
+        # 使用叉積計算交點與射線起點的位置參數
+        t = np.cross(start_to_start, segment_direction) / cross_product
+        u = np.cross(start_to_start, ray_direction) / cross_product
+
+        # 檢查交點是否在射線上且在線段上
+        if t >= 0 and u >= 0 and u <= 1:
+            intersection_point = ray_start + t * ray_direction
+            return intersection_point
+        else:
+            return None
