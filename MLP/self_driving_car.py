@@ -5,8 +5,6 @@ from math_tool import MathTool
 class SelfDrivingCar:
     def __init__(self,input_size, initial_x=0, initial_y=0, initial_F=90, b=6):
         """
-        初始化 SelfDrivingCar 類
-
         參數：
         initial_x, initial_y: 初始座標
         initial_F: 初始角度
@@ -22,11 +20,8 @@ class SelfDrivingCar:
         mlp.load_data()
         mlp.train()
         self.MLP=mlp
-
         self.distances=[0,0,0] #[前方距離,右方距離,左方距離]
-
         self.load_data()
-        
 
     def load_data(self):
         # 讀取檔案
@@ -50,14 +45,12 @@ class SelfDrivingCar:
                 [self.end_rect_left, self.end_rect_top],   # 左上
                 [self.end_rect_right,self.end_rect_top]    # 右上 (重複以閉合區域)
             ]
-
             self.track_points = [list(map(float, line.split(','))) for line in lines[3:]]
 
     def update_state(self):
         """
         根據模擬方程式更新自走車的狀態
         Th: 模型車方向盤所打的角度
-
         """
         pi=3.1415926
         if self.input_size == 3:
@@ -67,7 +60,6 @@ class SelfDrivingCar:
         self.Th=Th
         Th = Th/180*pi
         F=self.F/180*pi
-
 
         F_next = F - np.arcsin(2 * np.sin(Th) / self.b)
         x_next = self.x + np.cos(F + Th) + np.sin(Th) * np.sin(F)
@@ -79,41 +71,26 @@ class SelfDrivingCar:
         # 更新狀態
         self.F, self.x, self.y = F_next, x_next, y_next
 
-
     def calculate_distances(self):
-        """
-        計算車體前方、左方、右方的距離
-        """
-        # 計算車體前方的距離
+        # 計算車體前、左、右方的距離
         front_distance = self.calculate_distance_in_direction(self.F)
-
-        # 計算車體右方的距離
         right_distance = self.calculate_distance_in_direction(self.F - 45)
-
-        # 計算車體左方的距離
         left_distance = self.calculate_distance_in_direction(self.F + 45)
-
         # 更新 distances 屬性
         self.distances = [front_distance, right_distance, left_distance]
 
     def calculate_distance_in_direction(self, angle):
-        """
-        根據給定的角度計算車體在該方向上的距離
-        """
+        #根據給定的角度計算車體在該方向上的距離
         x_direction = np.cos(np.radians(angle))
         y_direction = np.sin(np.radians(angle))
-
         car_center = np.array([self.x, self.y])
-
         # 計算車體在該方向上的端點
         end_point = car_center + self.b / 2 * np.array([x_direction, y_direction])
-
         # 尋找與牆壁的交點，並計算距離
         min_distance = float('inf')
         for i in range(len(self.track_points)):
             line_start = np.array(self.track_points[i])
             line_end = np.array(self.track_points[(i + 1) % len(self.track_points)])
-            
             # 檢查射線是否和線段相交
             intersection_point = MathTool.ray_segment_intersection(car_center, end_point, line_start, line_end)
             if intersection_point is not None:
@@ -129,10 +106,7 @@ class SelfDrivingCar:
     def reach_goal(self):
         return self.check_car_collision(self.end_area)
 
-    def check_car_collision(self,target):
-        """
-        檢查車體是否與任何牆壁發生碰撞
-        """
+    def check_car_collision(self,target):#檢查車體是否與target發生碰撞
         car_center = np.array([self.x, self.y])
         # 檢查車體與每個牆壁的碰撞
         for i in range(len(target)-1):
@@ -141,12 +115,7 @@ class SelfDrivingCar:
 
             if MathTool.line_segment_circle_intersection(car_center,self.b/2.0, line_start, line_end):
                 return True
-
         return False
     
 if __name__ == "__main__":
-
-
     car = SelfDrivingCar()
-
-   
