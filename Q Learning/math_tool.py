@@ -78,3 +78,17 @@ class MathTool:
             return intersection_point
         else:
             return None
+    @staticmethod
+    def get_next_state(x,y,F,Th,b):
+        pi=3.1415926
+        #self.Th=Th
+        Th = Th/180*pi
+        F= F/180*pi
+
+        F_next = F - np.arcsin(2 * np.sin(Th) / b)
+        x_next = x + np.cos(F + Th) + np.sin(Th) * np.sin(F)
+        y_next = y + np.sin(F + Th) - np.sin(Th) * np.cos(F)
+        F_next = F_next/pi*180
+        # 限制角度的範圍
+        F_next = np.clip(F_next, -90, 270)
+        return F_next,x_next,y_next

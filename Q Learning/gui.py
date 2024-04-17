@@ -7,6 +7,7 @@ from matplotlib.patches import Circle
 import self_driving_car as car
 import threading
 import time
+import Q_Learning
 
 class GUI(tk.Tk):
     def __init__(self):
@@ -17,9 +18,8 @@ class GUI(tk.Tk):
 
         # 初始化行進軌跡
         self.track_trace = [[0,0]]
-        self.rec=[]
-
-        self.car=car.SelfDrivingCar(3)
+        self.car=car.SelfDrivingCar()
+        self.Q=Q_Learning.Q_Learning()
 
         self.create_simulation_figure()
         self.create_sensor()
@@ -87,7 +87,6 @@ class GUI(tk.Tk):
         self.canvas.get_tk_widget().pack()
 
     def update_gui(self):
-        self.track_trace.append((self.car.x, self.car.y))
         self.car.calculate_distances()  # 計算距離
         self.update_distances_labels()  # 更新距離顯示
         self.update_collision_label()  # 更新碰撞標籤
@@ -109,16 +108,18 @@ class GUI(tk.Tk):
 
     def run_simulation(self):
         # 定義每秒執行一次的循環
-        while True:
-            tmp=self.car.distances
-            # 更新 self.car 的狀態
-            self.car.update_state()  # 這裡的 10 是假設的模擬方向盤角度
-            tmp.append(self.car.Th)
-            self.rec.append(tmp)
+        epochs=5
+        current=0
+        while current < epochs:
+            if self.car.reach_goal() or self.car.check_collision():
+                self.car=car.SelfDrivingCar()
+                self.track_trace = [[0,0]]
+            else:
+                self.car.update_state(self.Q.get_next_Th(self.car.get_distances()))  # 這裡的 10 是假設的模擬方向盤角度
+                self.track_trace.append((self.car.x, self.car.y))
+
             # 在主執行緒中執行 GUI 更新
             self.after(0, self.update_gui)
-            if self.collision_label["text"] != "是否碰撞: 否":
-                break
             # 休眠一秒
             time.sleep(0.2)
 
@@ -144,12 +145,7 @@ class GUI(tk.Tk):
 
     def update_collision_label(self):
         if self.car.reach_goal():
-            self.collision_label.config(text="抵達終點")
-            with open("track4D.txt", 'w') as file:
-                for i in self.rec:
-                    for j in i:
-                        file.write("%.2f " % j)
-                    file.write("\n")
+            pass
 
         else:
             is_collision = self.car.check_collision()

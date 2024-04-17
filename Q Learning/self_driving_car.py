@@ -1,9 +1,8 @@
 import numpy as np
-import Q_Learning as Q
 from math_tool import MathTool
 
 class SelfDrivingCar:
-    def __init__(self,input_size, initial_x=0, initial_y=0, initial_F=90, b=6):
+    def __init__(self, initial_x=0, initial_y=0, initial_F=90, b=6):
         """
         參數：
         initial_x, initial_y: 初始座標
@@ -15,11 +14,6 @@ class SelfDrivingCar:
         self.F = initial_F
         self.b = b
 
-        self.input_size=input_size
-        mlp=MLP.MLPnetwork(input_size)
-        mlp.load_data()
-        mlp.train()
-        self.MLP=mlp
         self.distances=[0,0,0] #[前方距離,右方距離,左方距離]
         self.load_data()
 
@@ -47,29 +41,15 @@ class SelfDrivingCar:
             ]
             self.track_points = [list(map(float, line.split(','))) for line in lines[3:]]
 
-    def update_state(self):
+    def update_state(self,Th):
         """
         根據模擬方程式更新自走車的狀態
         Th: 模型車方向盤所打的角度
         """
-        pi=3.1415926
-        if self.input_size == 3:
-            Th = self.MLP.get_next_Th(self.distances)
-        else:
-            Th = self.MLP.get_next_Th([self.x,self.y,self.distances[0],self.distances[1],self.distances[2]])
         self.Th=Th
-        Th = Th/180*pi
-        F=self.F/180*pi
-
-        F_next = F - np.arcsin(2 * np.sin(Th) / self.b)
-        x_next = self.x + np.cos(F + Th) + np.sin(Th) * np.sin(F)
-        y_next = self.y + np.sin(F + Th) - np.sin(Th) * np.cos(F)
-        F_next = F_next/pi*180
-        # 限制角度的範圍
-        F_next = np.clip(F_next, -90, 270)
-
-        # 更新狀態
-        self.F, self.x, self.y = F_next, x_next, y_next
+        
+        self.F, self.x, self.y = MathTool.get_next_state(self.x,self.y,self.F,Th,self.b)
+        self.calculate_distances()
 
     def calculate_distances(self):
         # 計算車體前、左、右方的距離
@@ -116,6 +96,10 @@ class SelfDrivingCar:
             if MathTool.line_segment_circle_intersection(car_center,self.b/2.0, line_start, line_end):
                 return True
         return False
-    
+    def set_position(self,x,y):
+        self.x=x
+        self.y=y
+    def get_distances(self):
+        return self.distances
 if __name__ == "__main__":
     car = SelfDrivingCar()
