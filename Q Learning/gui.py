@@ -108,20 +108,26 @@ class GUI(tk.Tk):
 
     def run_simulation(self):
         # 定義每秒執行一次的循環
-        epochs=5
+        epochs=1000
         current=0
+        print("current epoch:",current)
         while current < epochs:
             if self.car.reach_goal() or self.car.check_collision():
                 self.car=car.SelfDrivingCar()
                 self.track_trace = [[0,0]]
+                current += 1
+                print("current epoch:",current)
+                
             else:
-                self.car.update_state(self.Q.get_next_Th(self.car.get_distances()))  # 這裡的 10 是假設的模擬方向盤角度
+                #print("current:",self.car.distances)
+                self.car.update_state(self.Q.get_next_Th(self.car.distances))  # 這裡的 10 是假設的模擬方向盤角度
+                #print("next:",self.car.distances)
                 self.track_trace.append((self.car.x, self.car.y))
-
-            # 在主執行緒中執行 GUI 更新
-            self.after(0, self.update_gui)
-            # 休眠一秒
-            time.sleep(0.2)
+            if current > 990:
+                # 在主執行緒中執行 GUI 更新
+                self.after(0, self.update_gui)
+                # 休眠一秒
+                time.sleep(0.2)
 
     def create_sensor(self):
         # 新增標籤來顯示 distances
