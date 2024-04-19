@@ -112,16 +112,26 @@ class GUI(tk.Tk):
         current=0
         print("current epoch:",current)
         while current < epochs:
+            cnt=0
             if self.car.reach_goal() or self.car.check_collision():
+                print("current epoch:",current)
+                #print(self.Q.exploration_rate)
+                if self.car.reach_goal():
+                    print("reach goal")
+                    self.after(0, self.update_gui)
                 self.car=car.SelfDrivingCar()
+                self.Q.car=car.SelfDrivingCar()
                 self.track_trace = [[0,0]]
                 current += 1
-                print("current epoch:",current)
+                self.Q.exploration_rate *= self.Q.exploration_decay
+                cnt=0
+                
+                np.set_printoptions(suppress=True)
+                #print(self.Q.q_table)
                 
             else:
-                #print("current:",self.car.distances)
-                self.car.update_state(self.Q.get_next_Th(self.car.distances))  # 這裡的 10 是假設的模擬方向盤角度
-                #print("next:",self.car.distances)
+                cnt+=1
+                self.car.update_state(self.Q.get_next_Th(self.car.distances,cnt))  # 這裡的 10 是假設的模擬方向盤角度
                 self.track_trace.append((self.car.x, self.car.y))
             if current > 990:
                 # 在主執行緒中執行 GUI 更新

@@ -15,31 +15,42 @@ class SelfDrivingCar:
         self.b = b
 
         self.distances=[0,0,0] #[前方距離,右方距離,左方距離]
-        self.load_data()
+        #speed up
+        self.track_points=[[-6.0, -3.0], [-6.0, 22.0], [18.0, 22.0], [18.0, 50.0], [30.0, 50.0], [30.0, 10.0], [6.0, 10.0], [6.0, -3.0], [-6.0, -3.0]]
+        self.end_area=[[30.0, 40.0], [30.0, 37.0], [18.0, 37.0], [18.0, 40.0], [30.0, 40.0]]
+        self.end_rect_left=18.0
+        self.end_rect_right=30.0
+        self.end_rect_top=40.0
+        self.end_rect_bottom=37.0
+        #self.load_data()
 
-    def load_data(self):
-        # 讀取檔案
-        with open("軌道座標點.txt", 'r') as file:
-            lines = file.readlines()
-            # 解析檔案內容
-            self.x, self.y, self.F = map(float, lines[0].split(','))
-
-            end_rect_left_top = list(map(float, lines[1].split(',')))
-            end_rect_right_bottom = list(map(float, lines[2].split(',')))
-            self.end_rect_left = end_rect_left_top[0]
-            self.end_rect_right = end_rect_right_bottom[0]
-            self.end_rect_top = end_rect_left_top[1]
-            self.end_rect_bottom = end_rect_right_bottom[1]
-
-            # 存儲在 self.end_area 2D 列表中
-            self.end_area = [
-                [self.end_rect_right,self.end_rect_top],   # 右上
-                [self.end_rect_right,self.end_rect_bottom],   # 右下
-                [self.end_rect_left, self.end_rect_bottom],   # 左下
-                [self.end_rect_left, self.end_rect_top],   # 左上
-                [self.end_rect_right,self.end_rect_top]    # 右上 (重複以閉合區域)
-            ]
-            self.track_points = [list(map(float, line.split(','))) for line in lines[3:]]
+    #def load_data(self):
+    #    # 讀取檔案
+    #    with open("軌道座標點.txt", 'r') as file:
+    #        lines = file.readlines()
+    #        # 解析檔案內容
+    #        self.x, self.y, self.F = map(float, lines[0].split(','))
+#
+    #        end_rect_left_top = list(map(float, lines[1].split(',')))
+    #        end_rect_right_bottom = list(map(float, lines[2].split(',')))
+    #        self.end_rect_left = end_rect_left_top[0]
+    #        self.end_rect_right = end_rect_right_bottom[0]
+    #        self.end_rect_top = end_rect_left_top[1]
+    #        self.end_rect_bottom = end_rect_right_bottom[1]
+#
+    #        # 存儲在 self.end_area 2D 列表中
+    #        self.end_area = [
+    #            [self.end_rect_right,self.end_rect_top],   # 右上
+    #            [self.end_rect_right,self.end_rect_bottom],   # 右下
+    #            [self.end_rect_left, self.end_rect_bottom],   # 左下
+    #            [self.end_rect_left, self.end_rect_top],   # 左上
+    #            [self.end_rect_right,self.end_rect_top]    # 右上 (重複以閉合區域)
+    #        ]
+    #        self.track_points = [list(map(float, line.split(','))) for line in lines[3:]]
+    #        #print(self.end_rect_left,self.end_rect_right,self.end_rect_top,self.end_rect_bottom)
+    #        print(self.end_area)
+   
+        
 
     def update_state(self,Th):
         """
@@ -101,5 +112,10 @@ class SelfDrivingCar:
         self.y=y
     def get_distances(self):
         return self.distances
+    def reset(self):
+        self.x=0
+        self.y=0
+        self.F=90
+        self.distances=[0,0,0]
 if __name__ == "__main__":
     car = SelfDrivingCar()

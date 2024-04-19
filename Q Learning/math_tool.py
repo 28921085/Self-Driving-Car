@@ -21,13 +21,13 @@ class MathTool:
         if o1 != o2 and o3 != o4:
             return True  # Intersecting
         # Special case: collinear segments
-        if o1 == 0 and on_segment(A, P, B):
+        if o1 == 0 and MathTool.on_segment(A, P, B):
             return True
-        if o2 == 0 and on_segment(A, Q, B):
+        if o2 == 0 and MathTool.on_segment(A, Q, B):
             return True
-        if o3 == 0 and on_segment(P, A, Q):
+        if o3 == 0 and MathTool.on_segment(P, A, Q):
             return True
-        if o4 == 0 and on_segment(P, B, Q):
+        if o4 == 0 and MathTool.on_segment(P, B, Q):
             return True
         return False  # Not intersecting
 
@@ -92,3 +92,45 @@ class MathTool:
         # 限制角度的範圍
         F_next = np.clip(F_next, -90, 270)
         return F_next,x_next,y_next
+    @staticmethod
+    def point_to_polygon_distance(x, y, polygon):
+        polygon = np.array(polygon)
+        point = np.array([x, y])
+        if MathTool.is_inside_polygon(point, polygon):
+            return 0
+        distances = []
+        for i in range(len(polygon) - 1):
+            p1 = polygon[i]
+            p2 = polygon[i + 1]
+            distances.append(MathTool.point_to_line_distance(point, p1, p2))
+        #print(distances)
+        return min(distances)
+    @staticmethod
+    def is_inside_polygon(point, polygon):
+        # 使用射線法判斷點是否在多邊形內部
+        # 參考：https://en.wikipedia.org/wiki/Point_in_polygon#Ray_casting_algorithm
+        x, y = point
+        n = len(polygon)
+        inside = False
+        p1x, p1y = polygon[0]
+        for i in range(n + 1):
+            p2x, p2y = polygon[i % n]
+            if y > min(p1y, p2y):
+                if y <= max(p1y, p2y):
+                    if x <= max(p1x, p2x):
+                        if p1y != p2y:
+                            xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                        if p1x == p2x or x <= xinters:
+                            inside = not inside
+            p1x, p1y = p2x, p2y
+        return inside
+    @staticmethod
+    def point_to_line_distance(point, line_start, line_end):
+        # 計算點到線段的最短距離
+        # 參考：https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
+        x0, y0 = point
+        x1, y1 = line_start
+        x2, y2 = line_end
+        numerator = abs((y2 - y1) * x0 - (x2 - x1) * y0 + x2 * y1 - y2 * x1)
+        denominator = np.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
+        return numerator / denominator
