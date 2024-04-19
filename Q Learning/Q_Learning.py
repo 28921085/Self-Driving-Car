@@ -3,7 +3,7 @@ from math_tool import MathTool
 from self_driving_car import SelfDrivingCar
 
 class Q_Learning:
-    def __init__(self, degree_per_actions=4, state=5, learning_rate=0.1, gamma=0.9, exploration_rate=1.0, exploration_decay=0.99):
+    def __init__(self, degree_per_actions=4, state=5, learning_rate=0.1, gamma=0.9, exploration_rate=1.0, exploration_decay=0.992):
         self.degree_per_action= degree_per_actions # 一個state代表多少角度
         self.num_actions = 40//degree_per_actions*2+1 #0
         self.num_state=state #一個方向的state
@@ -79,14 +79,14 @@ class Q_Learning:
                 state=4
         return state
     def rew(self,distance):
-        return max(5.5-distance,0)**3*100
+        return max(6.2-distance,0)**3*100
     def take_action(self, action,inputs,step):
         self.car.update_state(self.convert_action_to_angle(action))
         next_input=self.car.get_distances()
         next_state = self.direction_to_state(next_input)
         reward=-5
         if self.car.reach_goal():
-            reward+=10000
+            reward+=1000000
         elif self.car.check_collision():
             reward=-200
         p=(self.rew(next_input[0])+self.rew(next_input[1])+self.rew(next_input[2]))

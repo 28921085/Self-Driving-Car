@@ -118,7 +118,8 @@ class GUI(tk.Tk):
                 #print(self.Q.exploration_rate)
                 if self.car.reach_goal():
                     print("reach goal")
-                    self.after(0, self.update_gui)
+                #    self.after(0, self.update_gui)
+                #    time.sleep(0.01)
                 self.car=car.SelfDrivingCar()
                 self.Q.car=car.SelfDrivingCar()
                 self.track_trace = [[0,0]]
