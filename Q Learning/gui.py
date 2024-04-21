@@ -20,8 +20,11 @@ class GUI(tk.Tk):
         self.track_trace = [[0,0]]
         self.car=car.SelfDrivingCar()
         self.Q=Q_Learning.Q_Learning()
+        self.epoch_record=[]
+        self.epoch_Th_record=[]
 
         self.create_simulation_figure()
+        self.create_progress_bar()
         self.create_sensor()
         self.create_buttons()
         self.create_collision_label()  # 新增碰撞標籤
@@ -79,6 +82,20 @@ class GUI(tk.Tk):
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
         self.ax.set_title('self-driving car simulation')
+    def create_progress_bar(self):
+        self.bar = tk.Canvas(self, width=500, height=20)
+        self.bar.pack(pady=10)
+
+    def update_progress_bar(self):
+        total_epochs = len(self.epoch_record)
+        if total_epochs > 0:
+            bar_width = 500 / total_epochs
+            for i, (reach_goal) in enumerate(self.epoch_record):
+                color = "green" if reach_goal else "red"
+                x0 = i * bar_width
+                x1 = (i + 1) * bar_width
+                self.bar.create_rectangle(x0, 0, x1, 20, fill=color)
+        self.bar.update()
 
     def create_simulation_figure(self):
         self.draw_fig()
@@ -97,48 +114,42 @@ class GUI(tk.Tk):
         self.fig_setting()
         self.canvas.draw()  # 實時更新圖形
 
-
     def start_simulation(self):
-        # 定義一個新的執行緒來執行模擬
         simulation_thread = threading.Thread(target=self.run_simulation)
-        # 設定執行緒為背景執行，主視窗關閉時結束執行緒
         simulation_thread.daemon = True
-        # 啟動執行緒
         simulation_thread.start()
 
     def run_simulation(self):
         # 定義每秒執行一次的循環
-        epochs=1000
+        epochs=200
         current=0
         print("current epoch:",current)
         while current < epochs:
-            cnt=0
+            Th_record=[]
             if self.car.reach_goal() or self.car.check_collision():
                 print("current epoch:",current)
-                #print(self.Q.exploration_rate)
+                reach_goal=0
                 if self.car.reach_goal():
+                    reach_goal=1
                     print("reach goal")
-                #    self.after(0, self.update_gui)
-                #    time.sleep(0.01)
+
+                self.epoch_record.append(reach_goal)
+                self.epoch_Th_record.append(Th_record)
                 self.car=car.SelfDrivingCar()
                 self.Q.car=car.SelfDrivingCar()
                 self.track_trace = [[0,0]]
+                Th_record=[]
                 current += 1
-                self.Q.exploration_rate *= self.Q.exploration_decay
-                cnt=0
-                
-                np.set_printoptions(suppress=True)
-                #print(self.Q.q_table)
-                
+                self.Q.exploration_rate *= self.Q.exploration_decay  
             else:
-                cnt+=1
-                self.car.update_state(self.Q.get_next_Th(self.car.distances,cnt))  # 這裡的 10 是假設的模擬方向盤角度
+                next_Th=self.Q.get_next_Th(self.car.distances)
+                Th_record.append(next_Th)
+                self.car.update_state(next_Th)  # 這裡的 10 是假設的模擬方向盤角度
                 self.track_trace.append((self.car.x, self.car.y))
-            if current > 990:
-                # 在主執行緒中執行 GUI 更新
-                self.after(0, self.update_gui)
-                # 休眠一秒
-                time.sleep(0.2)
+            #if current >= 190:
+            #    self.after(0, self.update_gui)
+            #    time.sleep(0.2)
+        self.update_progress_bar()  # 更新 progress_bar
 
     def create_sensor(self):
         # 新增標籤來顯示 distances

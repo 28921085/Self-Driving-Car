@@ -16,37 +16,22 @@ class Q_Learning:
         self.car=SelfDrivingCar()
     def train(self,epochs):
         for epoch in range(epochs):
-            #print("epoch:",epoch+1)
             self.car=SelfDrivingCar()
             while not(self.car.reach_goal() or self.car.check_collision()):
                 Th = self.get_next_Th(self.car.get_distances())
                 self.car.update_state(Th)
-            #print(self.q_table)
 
-    def get_next_Th(self, inputs,step): #input=[前方距離、右方距離、左方距離]
+    def get_next_Th(self, inputs): #input=[前方距離、右方距離、左方距離]
         # 將inputs轉換成狀態
         state = self.direction_to_state(inputs)
-        #print("direction:",inputs,"  state:",state)
         # 根據狀態選擇行動
         action = self.choose_action(state) #action = Th+40 (-40<=Th<=40  => 0<=Th<=80)
-        #print("next action:",action,"next angle:",action-40)
         # 進行動作後得到的新狀態和獎勵
-        next_state, reward = self.take_action(action,inputs,step)
+        next_state, reward = self.take_action(action)
         # 更新Q-table
         self.update_q_table(state, action, reward, next_state)
-        # 更新探索率
-            
-        #self.exploration_rate *= self.exploration_decay #移到GUI
-        #print("next Th:",self.convert_action_to_angle(action))
         # 返回預測的方向盤角度
         return self.convert_action_to_angle(action)
-    #def state_to_direction(self,state): #decode hash
-    #    res=[]
-    #    for _ in range(3):
-    #        res.append(state%self.num_state)
-    #        state//=self.num_state
-    #    res = res[::-1] #reverse
-    #    return res
 
     def choose_action(self, state):
         if np.random.rand() < self.exploration_rate: #隨機行動
@@ -79,8 +64,8 @@ class Q_Learning:
                 state=4
         return state
     def rew(self,distance):
-        return max(6.2-distance,0)**3*100
-    def take_action(self, action,inputs,step):
+        return max(6.5-distance,0)**2*1000
+    def take_action(self, action):
         self.car.update_state(self.convert_action_to_angle(action))
         next_input=self.car.get_distances()
         next_state = self.direction_to_state(next_input)
@@ -91,7 +76,7 @@ class Q_Learning:
             reward=-200
         p=(self.rew(next_input[0])+self.rew(next_input[1])+self.rew(next_input[2]))
         reward-=p #太貼牆會大幅減少reward
-        q=10*(100 - MathTool.point_to_polygon_distance(self.car.x,self.car.y,self.car.end_area)**2) #離終點越近 reward越高
+        q=10*(400 - MathTool.point_to_polygon_distance(self.car.x,self.car.y,self.car.end_area)**2) #離終點越近 reward越高
         reward+= q
         #print("reward:",reward,"wall:",p,"distance:",q)
         return next_state, reward
