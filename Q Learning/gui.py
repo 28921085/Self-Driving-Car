@@ -14,7 +14,7 @@ class GUI(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.title("Perceptron Training Results")
+        self.title("Q Learning Training Results")
         self.geometry("600x800")
 
         # 初始化行進軌跡
@@ -31,10 +31,8 @@ class GUI(tk.Tk):
         self.create_buttons()
         self.create_collision_label()  # 新增碰撞標籤
         
-
         self.start_simulation()
         
-
     def draw_map(self):
         # 提取x和y座標以繪製軌道
         track_x = [point[0] for point in self.car.track_points]
@@ -88,9 +86,6 @@ class GUI(tk.Tk):
     def create_progress_bar(self):
         self.bar = tk.Canvas(self, width=500, height=20)
         self.bar.pack(pady=10)
-        # 綁定點擊事件
-        #self.bar.bind("<Button-1>", self.on_bar_click)
-
         self.current_epochs = StringVar()
         self.current_epochs_label = ttk.Label(self, textvariable=self.current_epochs)
         self.current_epochs_label.pack()  # 將 Label 元件加入到 GUI 中
@@ -109,12 +104,6 @@ class GUI(tk.Tk):
                 x1 = (i + 1) * bar_width
                 self.bar.create_rectangle(x0, 0, x1, 20, fill=color)
         self.bar.update()
-    #def on_bar_click(self, event):
-    #    if self.isPlaying:
-    #        return
-        #thread = threading.Thread(target=self.play_animate(event))
-        #thread.daemon = True
-        #thread.start()
 
     def play_animate(self,event):
         # 計算點擊的格子索引
@@ -245,8 +234,6 @@ class GUI(tk.Tk):
         # 新增旋轉車頭的按鈕
         self.rotate_left_button.grid(row=1, column=3, padx=10, pady=5)
         self.rotate_right_button.grid(row=1, column=4, padx=10, pady=5)
-
-
 
     def move_car(self, dx, dy):
         self.car.x += dx

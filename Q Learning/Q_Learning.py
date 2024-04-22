@@ -13,18 +13,12 @@ class Q_Learning:
         self.exploration_decay = exploration_decay
         self.q_table = np.zeros((self.num_state, self.num_actions))
         self.car=SelfDrivingCar()
-    def train(self,epochs):
-        for epoch in range(epochs):
-            self.car=SelfDrivingCar()
-            while not(self.car.reach_goal() or self.car.check_collision()):
-                Th = self.get_next_Th(self.car.get_distances())
-                self.car.update_state(Th)
 
     def get_next_Th(self, inputs): #input=[前方距離、右方距離、左方距離]
         # 將inputs轉換成狀態
         state = self.direction_to_state(inputs)
         # 根據狀態選擇行動
-        action = self.choose_action(state) #action = Th+40 (-40<=Th<=40  => 0<=Th<=80)
+        action = self.choose_action(state) 
         # 進行動作後得到的新狀態和獎勵
         next_state, reward = self.take_action(action)
         # 更新Q-table
@@ -82,22 +76,10 @@ class Q_Learning:
 
     def convert_action_to_angle(self, action):
         #action 0  1-10  11-20
-        # angle 0  -4~40  4~40
+        # angle 0  -4~-40  4~40
         if action == 0:
             return 0
         elif action < 11:
             return -self.degree_per_action*(action)
         #11<=action<=20
         return self.degree_per_action*(action-10)
-
-# 測試
-#if __name__ == "__main__":
-#    q_learning = Q_Learning()
-#    #inputs = [3.2, 4.5, 2.8]  # 假設輸入的距離
-#    #next_angle = q_learning.get_next_Th(inputs)
-#    #print("Next Steering Angle:", next_angle)
-#    q_learning.train(100)
-
-    
-
-

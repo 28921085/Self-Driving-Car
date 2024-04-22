@@ -3,3 +3,5 @@ MLP/build
 MLP/dist
 *.spec
 Q Learning/__pycache__
+Q Learning/build
+Q Learning/dist
