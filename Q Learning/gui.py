@@ -6,8 +6,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.patches import Circle
 import self_driving_car as car
 import threading
-import time
+from tkinter import StringVar
 import Q_Learning
+import time
 
 class GUI(tk.Tk):
     def __init__(self):
@@ -22,12 +23,14 @@ class GUI(tk.Tk):
         self.Q=Q_Learning.Q_Learning()
         self.epoch_record=[]
         self.epoch_Th_record=[]
+        self.isPlaying=False
 
         self.create_simulation_figure()
         self.create_progress_bar()
         self.create_sensor()
         self.create_buttons()
         self.create_collision_label()  # 新增碰撞標籤
+        
 
         self.start_simulation()
         
@@ -85,6 +88,16 @@ class GUI(tk.Tk):
     def create_progress_bar(self):
         self.bar = tk.Canvas(self, width=500, height=20)
         self.bar.pack(pady=10)
+        # 綁定點擊事件
+        #self.bar.bind("<Button-1>", self.on_bar_click)
+
+        self.current_epochs = StringVar()
+        self.current_epochs_label = ttk.Label(self, textvariable=self.current_epochs)
+        self.current_epochs_label.pack()  # 將 Label 元件加入到 GUI 中
+
+        self.goal_epochs = StringVar()
+        self.goal_epochs_label = ttk.Label(self, textvariable=self.goal_epochs)
+        self.goal_epochs_label.pack()  # 將 Label 元件加入到 GUI 中
 
     def update_progress_bar(self):
         total_epochs = len(self.epoch_record)
@@ -96,6 +109,31 @@ class GUI(tk.Tk):
                 x1 = (i + 1) * bar_width
                 self.bar.create_rectangle(x0, 0, x1, 20, fill=color)
         self.bar.update()
+    #def on_bar_click(self, event):
+    #    if self.isPlaying:
+    #        return
+        #thread = threading.Thread(target=self.play_animate(event))
+        #thread.daemon = True
+        #thread.start()
+
+    def play_animate(self,event):
+        # 計算點擊的格子索引
+        bar_width = 500 / len(self.epoch_record)
+        index = int(event.x / bar_width)
+        if 0 <= index < len(self.epoch_record):
+            print(index)
+            #點擊該格資料
+            self.isPlaying=True
+            self.track_trace = [[0,0]]
+            self.car=car.SelfDrivingCar()
+            
+            for Th in self.epoch_Th_record[index]:
+                self.car.update_state(Th)
+                self.track_trace.append((self.car.x, self.car.y))
+                #self.after(200, self.update_gui)
+                time.sleep(0.2)
+            self.isPlaying=False
+
 
     def create_simulation_figure(self):
         self.draw_fig()
@@ -123,15 +161,15 @@ class GUI(tk.Tk):
         # 定義每秒執行一次的循環
         epochs=200
         current=0
-        print("current epoch:",current)
+        Th_record=[]
+        goal_str="Goal epochs:"
         while current < epochs:
-            Th_record=[]
             if self.car.reach_goal() or self.car.check_collision():
-                print("current epoch:",current)
                 reach_goal=0
                 if self.car.reach_goal():
                     reach_goal=1
-                    print("reach goal")
+                    goal_str += " "+str(current+1)
+                    self.goal_epochs.set(goal_str)
 
                 self.epoch_record.append(reach_goal)
                 self.epoch_Th_record.append(Th_record)
@@ -140,16 +178,19 @@ class GUI(tk.Tk):
                 self.track_trace = [[0,0]]
                 Th_record=[]
                 current += 1
+                # 更新 epochs 的顯示
+                self.current_epochs.set(f"Current Epochs: {current + 1}/{epochs}")
                 self.Q.exploration_rate *= self.Q.exploration_decay  
             else:
                 next_Th=self.Q.get_next_Th(self.car.distances)
                 Th_record.append(next_Th)
                 self.car.update_state(next_Th)  # 這裡的 10 是假設的模擬方向盤角度
                 self.track_trace.append((self.car.x, self.car.y))
-            #if current >= 190:
-            #    self.after(0, self.update_gui)
-            #    time.sleep(0.2)
+                self.after(0, self.update_gui)
+                time.sleep(0.026)
+        self.current_epochs.set("")
         self.update_progress_bar()  # 更新 progress_bar
+
 
     def create_sensor(self):
         # 新增標籤來顯示 distances

@@ -112,10 +112,5 @@ class SelfDrivingCar:
         self.y=y
     def get_distances(self):
         return self.distances
-    def reset(self):
-        self.x=0
-        self.y=0
-        self.F=90
-        self.distances=[0,0,0]
 if __name__ == "__main__":
     car = SelfDrivingCar()

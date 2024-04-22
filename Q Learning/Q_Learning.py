@@ -12,7 +12,6 @@ class Q_Learning:
         self.exploration_rate = exploration_rate
         self.exploration_decay = exploration_decay
         self.q_table = np.zeros((self.num_state, self.num_actions))
-        print(self.q_table.shape)
         self.car=SelfDrivingCar()
     def train(self,epochs):
         for epoch in range(epochs):
