@@ -12,7 +12,7 @@ class GUI(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.title("Perceptron Training Results")
+        self.title("Fuzzy System Results")
         self.geometry("600x800")
 
         # 初始化行進軌跡
@@ -144,12 +144,18 @@ class GUI(tk.Tk):
 
     def update_collision_label(self):
         if self.car.reach_goal():
-            pass
+            self.collision_label.config(text="抵達終點")
+            with open("track.txt", 'w') as file:
+                for i in self.rec:
+                    for j in i:
+                        file.write("%.2f " % j)
+                    file.write("\n")
         else:
             is_collision = self.car.check_collision()
             # 更新碰撞標籤的文字
             collision_text = "是" if is_collision else "否"
             self.collision_label.config(text=f"是否碰撞: {collision_text}")
+            
 
     def create_buttons(self):
         self.buttons_frame = ttk.Frame(self)
