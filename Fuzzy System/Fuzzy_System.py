@@ -50,5 +50,5 @@ class Fuzzy_System:
         #左轉或右轉
         angle = p2[0]*-1+p2[2]*1
         #轉彎的強度
-        angle = angle*(30*p1[0]+16*p1[1]+2*p1[2])
+        angle = angle*(40*p1[0]+20*p1[1]+5*p1[2])
         return angle
