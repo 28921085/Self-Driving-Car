@@ -42,7 +42,7 @@ class PSO:
                 self.X[i] = np.clip(self.X[i], self.lb, self.ub)
             
 
-            print(f'Iteration {t}/{self.max_iter}, Error(this epoch): {error}')
+            print(f'Iteration {t+1}/{self.max_iter}, Error(this epoch): {error}')
         self.mlp.set_params(self.gbest)
 
     def cal_score(self,x):

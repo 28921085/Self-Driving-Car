@@ -13,7 +13,7 @@ class GUI(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.title("Q Learning Training Results")
+        self.title("PSO-MLP Training Results")
         self.geometry("600x800")
 
         # 初始化行進軌跡
