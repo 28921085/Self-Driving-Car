@@ -66,7 +66,7 @@ class MLPnetwork:
     
         final_inputs = np.dot(self.weights_hidden_output, hidden_outputs) + self.bias_output
         final_outputs = final_inputs.flatten()  # 不使用激活函數或使用線性激活
-        
+        #print(len(final_outputs))
         
         return final_outputs[0]*40  #從-1 ~ 1 映射到 -40 ~ 40
 
